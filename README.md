@@ -41,3 +41,14 @@ make test
 ```
 
 Which runs the equivalent of `go test -v -race -cover -count=1 -failfast ./...`
+
+## Documentation
+
+Any infrastructure, code, or API documentation shall live in the `/docs` directory. This includes images, media, or text files that are relative to the explanation of this project and it's environment.
+
+API Documentation can be manually generated using the command:
+```bash
+make swaggo
+```
+
+This uses the [Swaggo/Swag](https://github.com/swaggo/swag) library to parse the API Handler and domain model annotations. A Go, JSON, and YAML file in OpenAPI v2 spec will be upserted into the `/docs` directory.
