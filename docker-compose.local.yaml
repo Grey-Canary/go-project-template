@@ -1,0 +1,68 @@
+services:
+  project-http-api:
+    container_name: project-api
+    build:
+      context: ./
+      dockerfile: local.Dockerfile
+    depends_on:
+      pg-database:
+        condition: service_healthy
+    networks:
+      - http-api
+    ports:
+      - "5000:5000"
+    volumes:
+      - .:/project-http-api-data
+    env_file:
+      - .env
+
+  pg-database:
+    container_name: project-database
+    image: 'postgres:latest'
+    environment:
+      POSTGRES_USER: project_dev_user
+      POSTGRES_PASSWORD: eYvpR9G8wI3D
+      POSTGRES_DB: project
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD', 'pg_isready', '-U', 'project_dev_user', '-d', 'project']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - http-api
+    ports:
+      - 5432:5432
+    expose:
+      - 3306
+    volumes:
+      - project-database-data:/var/lib/postgresql/data
+      - ./docker/provision/init.sql:/docker-entrypoint-initdb.d/init.sql
+    env_file:
+      - .env
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: project-pgadmin
+    restart: always
+    depends_on:
+      pg-database:
+        condition: service_healthy
+    ports:
+      - "8888:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: dev@name.com
+      PGADMIN_DEFAULT_PASSWORD: password
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+    networks:
+      - http-api
+
+volumes:
+  pg-database-data:
+  pgadmin-data:
+    driver: local
+
+networks:
+  http-api:
+    driver: bridge
